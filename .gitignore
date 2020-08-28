@@ -245,3 +245,5 @@ dmypy.json
 .pytype/
 
 # End of https://www.toptal.com/developers/gitignore/api/jupyternotebooks,pycharm,python
+
+/tool-tracking-data
