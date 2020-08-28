@@ -1,4 +1,6 @@
 # --- third-party ---
+import os
+
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -24,8 +26,8 @@ mytool = "electric_screwdriver"
 # mytool = "pneumatic_screwdriver"
 # mytool = "pneumatic_rivet_gun"
 firstTimeStamp = np.Inf
-
-mdr = MeasurementDataReader(source="/home/a/Desktop/SoSe_2020/tool-tracking/tool-tracking-data")
+data_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "tool-tracking-data")
+mdr = MeasurementDataReader(source=data_filepath)
 data_dict = (
     mdr.query(query_type=Measurement)
     .filter_by(Tool == mytool, DataTypes == [ACC, GYR, MIC, MAG])

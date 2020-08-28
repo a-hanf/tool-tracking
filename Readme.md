@@ -21,8 +21,8 @@ conda create --name tool-tracking_env python=3.7
 conda activate tool-tracking_env
 pip install -r requirements.txt
 ```
-
-4. Get introduced on how to load and work with the data
+4. Mark the data-tools and fhg-utils folders as Content roots or add them to your PYTHONPATH
+5. Get introduced on how to load and work with the data
 
 Start [Jupyter](https://jupyter.org/) and run the both notebook `How-to-load-the-data.ipynb` and `plot_window_sizes.ipynb` with:
 ```
