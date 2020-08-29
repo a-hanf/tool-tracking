@@ -22,28 +22,11 @@ from datatools import (
 )
 from datatools import ACC, GYR, MAG, MIC, POS, VEL
 from fhgutils import contextual_recarray_dtype
-mytool = "electric_screwdriver"
-# mytool = "pneumatic_screwdriver"
-# mytool = "pneumatic_rivet_gun"
-firstTimeStamp = np.Inf
-data_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "tool-tracking-data")
-mdr = MeasurementDataReader(source=data_filepath)
-data_dict = (
-    mdr.query(query_type=Measurement)
-    .filter_by(Tool == mytool, DataTypes == [ACC, GYR, MIC, MAG])
-    .get()
-)
-
-measurement_campaign = "01"
-acc = pd.DataFrame(data_dict.get(measurement_campaign).acc)
-gyr = pd.DataFrame(data_dict.get(measurement_campaign).gyr)
-mic = pd.DataFrame(data_dict.get(measurement_campaign).mic)
-mag = pd.DataFrame(data_dict.get(measurement_campaign).mag)
-
 
 def combine_sensors(reference_data, others, firstTimeStamp=np.Inf):
-    """combine dataframes of data frome different sensors.
+    """combine dataframes from different sensors.
     Resample all entries to the frequency of reference_data.
+    Fills N/As as nearest occurrence timewise
     """
     # firstTimeStamp = np.Inf
     for sensor in [reference_data] + others:
@@ -74,9 +57,6 @@ def combine_sensors(reference_data, others, firstTimeStamp=np.Inf):
     return res, firstTimeStamp
 
 
-data_df, firstTimeStamp = combine_sensors(acc, [gyr])
-
-
 def extract_same_label(data, window_size):
     """
     :param data: 2d np matrix with label as last column
@@ -103,10 +83,31 @@ def extract_same_label(data, window_size):
             i += np.asarray(labels != labels[0]).nonzero()[0][0]
     return res
 
+mytool = "electric_screwdriver"
+# mytool = "pneumatic_screwdriver"
+# mytool = "pneumatic_rivet_gun"
+data_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "tool-tracking-data")
+# data_filepath = "./tool-tracking-data"
+mdr = MeasurementDataReader(source=data_filepath)
+data_dict = (mdr.query(query_type=Measurement).filter_by(Tool == mytool, DataTypes == [ACC, GYR, MIC, MAG]).get())
+firstTimeStamp = np.Inf
 
-data = data_df.values
-window_size = 60
-data_windowed = extract_same_label(data, window_size)
+
+window_size = 20  # 60 is too big, @data_folder/info.md
+nr_features = 8  # hardcoded, idk. 2 + ACC:3, GYR:3, MIC:, MAG:3
+data_windowed = np.empty((0,window_size,nr_features))
+
+for measurement_campaign in ["01","02","03","04"]:  # All recordings
+# for measurement_campaign in ["01"]:  # Only 1st recording
+    acc = pd.DataFrame(data_dict.get(measurement_campaign).acc)
+    gyr = pd.DataFrame(data_dict.get(measurement_campaign).gyr)
+    mic = pd.DataFrame(data_dict.get(measurement_campaign).mic)
+    mag = pd.DataFrame(data_dict.get(measurement_campaign).mag)
+    data_df, firstTimeStamp = combine_sensors(acc, [gyr], firstTimeStamp)  # Only ACC and GYR sensors
+    # data_df, firstTimeStamp = combine_sensors(acc, [gyr,mic,mag], firstTimeStamp)  # All sensors, downsampled
+    # data_df, firstTimeStamp = combine_sensors(mic, [acc,gyr,mag], firstTimeStamp)  # All sensors, upsampled
+    data = data_df.values
+    data_windowed = np.concatenate((data_windowed, extract_same_label(data, window_size)))
 
 X_windowed = data_windowed[:, :, :-1]
 y_windowed = data_windowed[:, :, -1]
