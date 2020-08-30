@@ -31,7 +31,6 @@ def combine_sensors(reference_data, others, firstTimeStamp=np.Inf):
     # firstTimeStamp = np.Inf
     for sensor in [reference_data] + others:
         firstTimeStamp = min(firstTimeStamp, sensor["time [s]"].min())
-    #     firstTimeStamp = np.min((firstTimeStamp, timestamps.min()))
 
     res = reference_data.copy()
     for df in others:
@@ -94,20 +93,21 @@ firstTimeStamp = np.Inf
 
 
 window_size = 20  # 60 is too big, @data_folder/info.md
-nr_features = 8  # hardcoded, idk. 2 + ACC:3, GYR:3, MIC:, MAG:3
-data_windowed = np.empty((0,window_size,nr_features))
+nr_features = 12  # hardcoded, idk. 2 + ACC:3, GYR:3, MIC:1, MAG:3
 
+data_windowed = np.empty((0,window_size,nr_features))
 for measurement_campaign in ["01","02","03","04"]:  # All recordings
 # for measurement_campaign in ["01"]:  # Only 1st recording
     acc = pd.DataFrame(data_dict.get(measurement_campaign).acc)
     gyr = pd.DataFrame(data_dict.get(measurement_campaign).gyr)
     mic = pd.DataFrame(data_dict.get(measurement_campaign).mic)
     mag = pd.DataFrame(data_dict.get(measurement_campaign).mag)
-    data_df, firstTimeStamp = combine_sensors(acc, [gyr], firstTimeStamp)  # Only ACC and GYR sensors
-    # data_df, firstTimeStamp = combine_sensors(acc, [gyr,mic,mag], firstTimeStamp)  # All sensors, downsampled
+    # data_df, firstTimeStamp = combine_sensors(acc, [gyr], firstTimeStamp)  # Only ACC and GYR sensors
+    data_df, firstTimeStamp = combine_sensors(acc, [gyr,mic,mag], firstTimeStamp)  # All sensors, downsampled
     # data_df, firstTimeStamp = combine_sensors(mic, [acc,gyr,mag], firstTimeStamp)  # All sensors, upsampled
     data = data_df.values
     data_windowed = np.concatenate((data_windowed, extract_same_label(data, window_size)))
 
 X_windowed = data_windowed[:, :, :-1]
-y_windowed = data_windowed[:, :, -1]
+y_windowed = data_windowed[:, 0, -1].astype(int)
+y_windowed_1hot = np.eye(max(y_windowed)+1)[y_windowed]
