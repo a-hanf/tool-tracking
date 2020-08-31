@@ -82,6 +82,61 @@ def extract_same_label(data, window_size):
             i += np.asarray(labels != labels[0]).nonzero()[0][0]
     return res
 
+
+def vote_label_time(window,majorityPortion = 0.5):
+    """
+    Parameters
+    ----------
+    window : a window of data with shape (#stamps,#features)
+    majorityPortion : how much is required to define majority
+
+    Returns
+    -------
+    the label that occured most in that window
+    """
+    labels = np.unique(window[:,-1])
+    timePerLabel = np.empty((0,2))
+    diffs = np.vstack((np.diff(window[:,0]),window[:-1,-1])).T
+    for l in labels:
+        t = sum(diffs[diffs[:,-1] == l,0])
+        timePerLabel = np.vstack((timePerLabel,np.array([t,l]).reshape(1,-1)))
+    if np.max(timePerLabel[:,0]) > majorityPortion * sum(timePerLabel[:,0]):
+        return timePerLabel[timePerLabel[:,0] == np.max(timePerLabel[:,0]),-1].astype(int)[0]
+    else:
+        return 8  # undefined
+
+
+def extract_by_time(data, length, overlap):
+    """
+    Parameters
+    ----------
+    data : 2d np matrix with label as last column
+    length : length of time for each window in seconds
+    overlap : portion of overlap between the windows
+
+    Returns
+    -------
+    Two lists: (due to inconsistent amount of timestamps in each window)
+    1st : list made of windows as np. matrices
+    2nd : list with majority labels in each window
+    """
+    res = []
+    res_labels = []
+    maxStamp = max(data[:,0])
+    currentStamp = min(data[:,0])
+    # lastStamp = 0
+    while currentStamp + length <= maxStamp:
+        candidate = data[np.logical_and((data[:,0] < currentStamp+length),(data[:,0] >= currentStamp))]
+        if candidate.size > 0:
+            if vote_label_time(candidate) != 8:
+                res = res + [candidate[:,:-1]]
+                res_labels = res_labels + [vote_label_time(candidate)]
+        currentStamp = data[data[:,0] >= currentStamp + (1-overlap)*length][0,0]
+        # lastStamp = currentStamp + (1-overlap)*length
+        # currentStamp = currentStamp + (1-overlap)*length
+    return res,res_labels
+
+
 mytool = "electric_screwdriver"
 # mytool = "pneumatic_screwdriver"
 # mytool = "pneumatic_rivet_gun"
@@ -108,6 +163,15 @@ for measurement_campaign in ["01","02","03","04"]:  # All recordings
     data = data_df.values
     data_windowed = np.concatenate((data_windowed, extract_same_label(data, window_size)))
 
+
+
 X_windowed = data_windowed[:, :, :-1]
 y_windowed = data_windowed[:, 0, -1].astype(int)
 y_windowed_1hot = np.eye(max(y_windowed)+1)[y_windowed]
+
+
+data = data_windowed.reshape(-1,12) # run for loop before that
+window_length = 20  # seconds
+overlap = 0.5  # portion
+X_windowed_time, y_windowed_time = extract_by_time(data,window_length,overlap)
+y_windowed_time_1hot = np.eye(max(y_windowed_time)+1)[y_windowed_time]
