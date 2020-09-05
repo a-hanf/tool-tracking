@@ -1,6 +1,6 @@
 # --- third-party ---
 import os
-
+import pickle
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -111,3 +111,6 @@ for measurement_campaign in ["01","02","03","04"]:  # All recordings
 X_windowed = data_windowed[:, :, :-1]
 y_windowed = data_windowed[:, 0, -1].astype(int)
 y_windowed_1hot = np.eye(max(y_windowed)+1)[y_windowed]
+
+pickle.dump(X_windowed, open('../X_windowed.pickle', 'wb'))
+pickle.dump(y_windowed, open('../y_windowed.pickle', 'wb'))
