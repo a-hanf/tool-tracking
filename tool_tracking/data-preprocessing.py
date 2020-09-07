@@ -1,5 +1,6 @@
 # --- third-party ---
 import os
+import pickle
 
 import pandas as pd
 import numpy as np
@@ -184,3 +185,6 @@ overlap = 0.5  # portion
 # bottom are lists because windows have differing amount of stamps
 X_windowed_time, y_windowed_time = extract_by_time(data,window_length,overlap)
 y_windowed_time_1hot = np.eye(max(y_windowed_time)+1)[y_windowed_time]
+
+pickle.dump(X_windowed, open('../X_windowed.pickle', 'wb'))
+pickle.dump(y_windowed, open('../y_windowed.pickle', 'wb'))
