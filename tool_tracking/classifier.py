@@ -8,7 +8,7 @@ model.add(layers.LSTM(20, return_sequences=True))
 # didn't manage to add in a proper softmax layer
 model.add(layers.Dense(1))
 # SparseCategorical is for integer-encoded labels, Categorical expects 1-hot encoding
-model.compile(loss=keras.losses.SparseCategoricalCrossentropy(), optimizer="sgd", metrics=["accuracy"])
+model.compile(loss=keras.losses.SparseCategoricalCrossentropy(), optimizer="sgd", metrics=["categorical_accuracy"])
 
 try:
     X = pickle.load(open('../X_windowed.pickle', 'rb'))
