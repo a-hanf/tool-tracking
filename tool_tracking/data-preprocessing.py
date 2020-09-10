@@ -1,6 +1,7 @@
 # --- third-party ---
 import os
 import pickle
+
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -177,9 +178,6 @@ X_windowed = data_windowed[:, :, :-1]
 y_windowed = data_windowed[:, 0, -1].astype(int)
 y_windowed_1hot = np.eye(max(y_windowed)+1)[y_windowed]
 
-pickle.dump(X_windowed, open('../X_windowed.pickle', 'wb'))
-pickle.dump(y_windowed, open('../y_windowed.pickle', 'wb'))
-
 
 # run for loop before that
 window_length = 20  # seconds
@@ -187,3 +185,6 @@ overlap = 0.5  # portion
 # bottom are lists because windows have differing amount of stamps
 X_windowed_time, y_windowed_time = extract_by_time(data,window_length,overlap)
 y_windowed_time_1hot = np.eye(max(y_windowed_time)+1)[y_windowed_time]
+
+pickle.dump(X_windowed, open('../X_windowed.pickle', 'wb'))
+pickle.dump(y_windowed, open('../y_windowed.pickle', 'wb'))
