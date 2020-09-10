@@ -1,5 +1,6 @@
 # --- third-party ---
 import os
+import pickle
 
 import pandas as pd
 import numpy as np
@@ -35,23 +36,22 @@ def combine_sensors(reference_data, others, firstTimeStamp=np.Inf):
 
     res = reference_data.copy()
     for df in others:
-        res = pd.merge_asof(
+        res = pd.merge_ordered(
             res,
             df,
             left_on="time [s]",
             right_on="time [s]",
-            direction="nearest",
+            #direction="nearest",
         )
-    res = res.loc[:, ~res.columns.duplicated()]
-    res["label"] = res["label_x"]
-    res = res.rename({res.columns[0]: "time"}, axis="columns")
-    del res["label_x"]
-    del res["label_y"]
+        res = res.loc[:, ~res.columns.duplicated()]
+        res["label"] = np.where(np.isnan(res["label_x"]),res["label_y"],res["label_x"])
+        del res["label_x"]
+        del res["label_y"]
     res = res.loc[res["label"] != -1]
-
-    res = res.loc[res["label"] != 8]  # Comment out if you want "undefined" as a class
-
+    res = res.loc[res["label"] !=  8]
+    res = res.rename({res.columns[0]: "time"}, axis="columns")
     res["time"] = res["time"] - firstTimeStamp
+    res = res.fillna(0)
     return res, firstTimeStamp
 
 
@@ -69,14 +69,7 @@ def extract_same_label(data, window_size):
         labels = candidate[:, -1]
         if len(np.unique(labels)) == 1:
             i += window_size
-            res = np.concatenate(
-                (
-                    res,
-                    candidate.reshape(
-                        (1, candidate.shape[0], candidate.shape[1])
-                    )
-                )
-            )
+            res = np.concatenate((res, candidate.reshape((1, candidate.shape[0], candidate.shape[1]))))
         else:
             i += np.asarray(labels != labels[0]).nonzero()[0][0]
     return res
@@ -160,27 +153,55 @@ relabel_dict = {  # Labels are shared across all tools, 'holes' in both pneumati
 relabel_actions = np.vectorize(lambda x: relabel_dict[x])
 
 firstTimeStamp = np.Inf
-window_size = 20  # 60 is too big, @data_folder/info.md
+window_size = 20  #
 nr_features = 12  # hardcoded, idk. 2 + ACC:3, GYR:3, MIC:1, MAG:3
 
 data_windowed = np.empty((0, window_size, nr_features))
 data = np.empty((0, nr_features))
 for measurement_campaign in ["01", "02", "03", "04"]:  # All recordings
-    # for measurement_campaign in ["01"]:  # Only 1st recording
+# for measurement_campaign in ["02"]:  # Only 1st recording
+    print(measurement_campaign)
     acc = pd.DataFrame(data_dict.get(measurement_campaign).acc)
+    acc = acc.loc[acc["label"] != 8]
     gyr = pd.DataFrame(data_dict.get(measurement_campaign).gyr)
+    gyr = gyr.loc[gyr["label"] != 8]
     mic = pd.DataFrame(data_dict.get(measurement_campaign).mic)
+    mic = mic.loc[mic["label"] != 8]
+    # mic = mic.iloc[::10,]
     mag = pd.DataFrame(data_dict.get(measurement_campaign).mag)
+    mag = mag.loc[mag["label"] != 8]
+
     # data_df, firstTimeStamp = combine_sensors(acc, [gyr], firstTimeStamp)  # Only ACC and GYR sensors
-    data_df, firstTimeStamp = combine_sensors(acc, [gyr, mic, mag], firstTimeStamp)  # All sensors, downsampled
+    data_df, firstTimeStamp = combine_sensors(acc, [gyr,mag,mic], firstTimeStamp)  # All sensors, downsampled
     # data_df, firstTimeStamp = combine_sensors(mic, [acc,gyr,mag], firstTimeStamp)  # All sensors, upsampled
     data_df['label'] = relabel_actions(data_df['label'])
     data = np.vstack((data, data_df.values))
     data_windowed = np.concatenate((data_windowed, extract_same_label(data_df.values, window_size)))
 
+
 X_windowed = data_windowed[:, :, :-1]
 y_windowed = data_windowed[:, 0, -1].astype(int)
 y_windowed_1hot = np.eye(max(y_windowed) + 1)[y_windowed]
+pickle.dump(X_windowed, open('../X_winsize_20.pickle', 'wb'))
+pickle.dump(y_windowed, open('../y_winsize_20.pickle', 'wb'))
+pickle.dump(y_windowed_1hot, open('../y1hot_winsize_20.pickle', 'wb'))
+
+
+data_60 = extract_same_label(data,60)
+X_windowed = data_60[:, :, :-1]
+y_windowed = data_60[:, 0, -1].astype(int)
+y_windowed_1hot = np.eye(max(y_windowed) + 1)[y_windowed]
+pickle.dump(X_windowed, open('../X_winsize_60.pickle', 'wb'))
+pickle.dump(y_windowed, open('../y_winsize_60.pickle', 'wb'))
+pickle.dump(y_windowed_1hot, open('../y1hot_winsize_60.pickle', 'wb'))
+
+data_100 = extract_same_label(data,100)
+X_windowed = data_100[:, :, :-1]
+y_windowed = data_100[:, 0, -1].astype(int)
+y_windowed_1hot = np.eye(max(y_windowed) + 1)[y_windowed]
+pickle.dump(X_windowed, open('../X_winsize_100.pickle', 'wb'))
+pickle.dump(y_windowed, open('../y_winsize_100.pickle', 'wb'))
+pickle.dump(y_windowed_1hot, open('../y1hot_winsize_100.pickle', 'wb'))
 
 # run for loop before that
 window_length = 20  # seconds
