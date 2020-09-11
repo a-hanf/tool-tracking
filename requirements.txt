@@ -7,6 +7,7 @@ ipython
 matplotlib
 seaborn
 tabulate
+mlflow[extras]
 
 -i https://pypi.python.org/simple
 absl-py==0.10.0

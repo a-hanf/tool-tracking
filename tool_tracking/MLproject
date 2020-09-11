@@ -1,0 +1,17 @@
+name: tool_tracking_experiments
+
+conda_env: conda.yaml
+
+entry_points:
+  load_data:
+    command: "python data-preprocessing.py"
+
+  main:
+    parameters:
+      epochs: {type: int, default: 5}
+      batch_size: {type: int, default: 64}
+#      alpha: float
+#      l1_ratio: {type: float, default: 0.1}
+    command: "python classifier.py 
+    				--bs {batch_size}
+					--epochs {epochs}"
