@@ -8,12 +8,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from os.path import exists
 import numpy as np
-from urllib.parse import urlparse
 import os
 import argparse
+from google_drive_downloader import GoogleDriveDownloader as gdd
+
 
 from models import *
-
 
 parser = argparse.ArgumentParser(description='Provide the hyperparameters')
 parser.add_argument('--epochs', type=int, default=10, help='# epochs')
@@ -27,6 +27,28 @@ if not exists("../X_windowed.pickle"):
     print('Run data-preprocessing.py first in order to create the pickle files for the training data')
 X = pickle.load(open('../X_windowed.pickle', 'rb'))
 y = pickle.load(open('../y_windowed.pickle', 'rb'))
+
+def download_from_google_drive(file_id, path):
+    """Downloading data from Google drive"""
+    # print(f'Enter google-drive file id ({name}):')
+    # file_id = input()
+    gdd.download_file_from_google_drive(file_id=file_id, dest_path=path+"t",
+                                        unzip=True, showsize=True, overwrite=True)
+    # os.remove(path+"t")
+
+
+path = "../pickles/"
+file_id="1ZzzerpMMIjMFezSOhkmfTKZJCVqV5Pkh"
+download_from_google_drive(file_id, "../pickles/") if not exists(path) else None
+if not exists(path+"X_winsize_100.pickle"):
+    print('Check file_id')
+
+one_hot_bool = True
+# X = pickle.load(open('../X_windowed.pickle', 'rb'))
+# y = pickle.load(open('../y_windowed.pickle', 'rb'))
+
+X = pickle.load(open(path+'X_winsize_100.pickle', 'rb'))
+y = pickle.load(open(path+'y_winsize_100.pickle', 'rb'))
 num_classes = len(np.unique(y))
 
 if one_hot_bool:
@@ -99,6 +121,15 @@ with mlflow.start_run():
 # predictions = model.predict(X_test[:3])
 # print("predictions shape:", predictions.shape)
 
+# SparseCategorical is for integer-encoded labels, Categorical expects 1-hot encoding
+if one_hot_bool:
+    model.compile(loss=keras.losses.categorical_crossentropy, optimizer="Adam",
+                  metrics=["categorical_accuracy"])
+else:
+    model.compile(loss=keras.losses.sparse_categorical_crossentropy, optimizer="Adam",
+                  metrics=["sparse_categorical_accuracy"])
+model.fit(X_train, y_train, batch_size=64, epochs=50)
+model.summary()
 
 
 # tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
