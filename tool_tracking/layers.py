@@ -10,7 +10,7 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import LSTMCell
 from tensorflow.python.ops import array_ops
 
-from tool_tracking.tensor_train import TensorTrain
+from tensor_train import TensorTrain
 
 
 class TTDense(Layer):

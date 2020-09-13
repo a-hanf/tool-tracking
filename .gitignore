@@ -1,4 +1,6 @@
 .idea/
+*.pickle
+pickles/
 
 # Created by https://www.toptal.com/developers/gitignore/api/jupyternotebooks,pycharm,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=jupyternotebooks,pycharm,python

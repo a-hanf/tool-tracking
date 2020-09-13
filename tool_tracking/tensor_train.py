@@ -7,7 +7,7 @@ import tensorflow as tf
 # import opt_einsum as oe
 
 # from tool_tracking import utils
-from tool_tracking.config import logger
+from config import logger
 
 
 class TensorTrain:

@@ -1,25 +1,12 @@
-from tensorflow.keras import layers
+from tensorflow.keras import layers as keras_layers
+from tensor_train import TensorTrain
+from layers import TTDense, TTLSTMCell
 
-from tool_tracking.tensor_train import TensorTrain
-from tool_tracking.layers import TTDense, TTLSTMCell
-
-
-def lstm_two_layer_attn(model):
-    model.add(layers.LSTM(100, return_sequences=True))
-    model.add(layers.LSTM(50, return_sequences=False))
-    model.add(layers.Attention())
-    return model
-
-
-def lstm_two_layer(model):
-    model.add(layers.LSTM(100, return_sequences=True))
-    model.add(layers.LSTM(50, return_sequences=False))
-    return model
 
 
 def tt_lstm_two_layer(model, rank=4):
     model.add(
-        layers.RNN(
+        keras_layers.RNN(
             TTLSTMCell(
                 tt=TensorTrain(
                     input_shape=[11, 1, 1, 1],
@@ -34,7 +21,7 @@ def tt_lstm_two_layer(model, rank=4):
     )
 
     model.add(
-        layers.RNN(
+        keras_layers.RNN(
             TTLSTMCell(
                 tt=TensorTrain(
                     input_shape=[4, 4, 2],
@@ -46,14 +33,4 @@ def tt_lstm_two_layer(model, rank=4):
             )
         )
     )
-    return model
-
-
-def lstm_one_layer(model):
-    model.add(layers.LSTM(100, return_sequences=False))
-    return model
-
-
-def rnn_one_layer(model):
-    model.add(layers.SimpleRNN(50, return_sequences=False))
     return model
