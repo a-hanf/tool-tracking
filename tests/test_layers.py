@@ -10,9 +10,6 @@ from tool_tracking.tensor_train import TensorTrain
 from tool_tracking.layers import TTDense, TTLSTMCell
 
 
-tf.config.set_visible_devices([], "GPU")
-
-
 def test_mnist_dense():
     # load data
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
