@@ -17,33 +17,14 @@ def lstm_two_layer(model):
     return model
 
 
-def tt_lstm_two_layers_1(model):
-    model.add(layers.LSTM(64, return_sequences=True))
-    model.add(
-        layers.RNN(
-            TTLSTMCell(
-                tt=TensorTrain(
-                    input_shape=[4, 4, 4],
-                    output_shape=[4, 8, 4],
-                    ranks=[1, 4, 4, 1],
-                ),
-                activation="tanh",
-                kernel_initializer="glorot_normal",
-            )
-        )
-    )
-
-    return model
-
-
-def tt_lstm_two_layer_2(model):
+def tt_lstm_two_layer(model, rank=4):
     model.add(
         layers.RNN(
             TTLSTMCell(
                 tt=TensorTrain(
                     input_shape=[11, 1, 1, 1],
-                    output_shape=[4, 4, 4, 4],
-                    ranks=[1, 4, 4, 4, 1],
+                    output_shape=[4, 4, 4, 2],
+                    ranks=[1, rank, rank, rank, 1],
                 ),
                 activation="tanh",
                 kernel_initializer="glorot_normal",
@@ -56,9 +37,9 @@ def tt_lstm_two_layer_2(model):
         layers.RNN(
             TTLSTMCell(
                 tt=TensorTrain(
-                    input_shape=[4, 4, 4],
-                    output_shape=[4, 8, 4],
-                    ranks=[1, 4, 4, 1],
+                    input_shape=[4, 4, 2],
+                    output_shape=[4, 6, 4],
+                    ranks=[1, rank, rank, 1],
                 ),
                 activation="tanh",
                 kernel_initializer="glorot_normal",
