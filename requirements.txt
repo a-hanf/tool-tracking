@@ -8,6 +8,7 @@ matplotlib
 seaborn
 tabulate
 mlflow[extras]
+keras-self-attention
 
 -i https://pypi.python.org/simple
 absl-py==0.10.0

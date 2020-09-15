@@ -32,7 +32,33 @@ Start [Jupyter](https://jupyter.org/) and run the both notebook `How-to-load-the
 jupyter notebook
 ```
 
-Changelog:
+# Best Results
+e.g. query:
+tags."mlflow.runName" = "lstm" and params.`batch size` = 64 and metrics.`categ acc` > 0.8
+
+BiLSTM. BS=64, e=50, hs=[100,50]. categ acc = 0.844, 0.822 , 0.814
+    0.826 +- 0.0127
+
+LSTM attn. bs=64, e=50, hs=[100, 50] categ acc= 0.837, 0.82, 0.819
+    0.8255 +- 0.008
+    
+BiLSTM Attn bs=64, e=50, hs=[100, 50] categ acc= 0.838, 0.837, 0.816
+    0.830 +-0.010
+
+LSTM bs=64, e=50, hs=[100, 50] categ acc=
+    0.826 +-0.002
+    
+RNN bs=64, e=50, hs=[100, 50] categ acc=
+    0.818 +-0.012
+    
+BiLSTM Attn bs=128, e=50, hs=[100, 50] categ acc= 0.836, 0.831, 0.823
+    0.83 +- 0.005
+    
+LSTM attn. bs=128, e=50, hs=[100, 50] categ acc= 0.839, 0.831, 0.818
+    0.829 +- 0.0086
+        
+     
+#Changelog:
 - 2020-08-14: Update dataset with enhanced rivetter labels
 - 2020-08-12: Update dataset with twice the amount of labeled data; enhanced labels.
 - 2020-07-29: Update data loader and notebooks

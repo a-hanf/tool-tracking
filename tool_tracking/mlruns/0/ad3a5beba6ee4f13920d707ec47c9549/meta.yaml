@@ -1,0 +1,15 @@
+artifact_uri: file:///home/pranav/Workspace/tool-tracking/tool_tracking/mlruns/0/ad3a5beba6ee4f13920d707ec47c9549/artifacts
+end_time: 1600042858914
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: ad3a5beba6ee4f13920d707ec47c9549
+run_uuid: ad3a5beba6ee4f13920d707ec47c9549
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1600042515377
+status: 3
+tags: []
+user_id: pranav
